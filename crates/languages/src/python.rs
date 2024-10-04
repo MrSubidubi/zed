@@ -190,15 +190,42 @@ impl LspAdapter for PythonLspAdapter {
         // to allow our own fuzzy score to be used to break ties.
         //
         // see https://github.com/microsoft/pyright/blob/95ef4e103b9b2f129c9320427e51b73ea7cf78bd/packages/pyright-internal/src/languageService/completionProvider.ts#LL2873
+
+        // elements in the sort_text are separated by dots
+        const SEPERATOR_LEN: usize = 1;
+
         for item in items {
             let Some(sort_text) = &mut item.sort_text else {
                 continue;
             };
             let mut parts = sort_text.split('.');
-            let Some(first) = parts.next() else { continue };
-            let Some(second) = parts.next() else { continue };
-            let Some(_) = parts.next() else { continue };
-            sort_text.replace_range(first.len() + second.len() + 1.., "");
+            let Some(sorting_category) = parts.next() else {
+                continue;
+            };
+            let Some(recent_usage) = parts.next() else {
+                continue;
+            };
+            let Some(name) = parts.next() else {
+                continue;
+            };
+            let pyright_score_len = sorting_category.len() + SEPERATOR_LEN + recent_usage.len();
+
+            // In the case of completion suggestions requiring an import, pyright appends the
+            // character length of the import path for the symbol followed by the entire import path
+            // to the `sortText`. A lower import path length for the same symbol implies a better
+            // completion result, thus we also consider the import path length for the `sort_text`
+            // as a last value for comparison.
+            if let Some(import_name_length) = parts.next() {
+                let score_name_end = pyright_score_len + SEPERATOR_LEN + name.len() + SEPERATOR_LEN;
+
+                // remove everything following the length of the import path
+                sort_text.replace_range(score_name_end + import_name_length.len().., "");
+                // remove the name from the sort text which sits between the initial score and the
+                // import path length
+                sort_text.replace_range(pyright_score_len..score_name_end, "");
+            } else {
+                sort_text.replace_range(pyright_score_len.., "");
+            }
         }
     }
 
