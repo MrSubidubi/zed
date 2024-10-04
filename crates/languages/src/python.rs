@@ -134,10 +134,31 @@ impl LspAdapter for PythonLspAdapter {
                 continue;
             };
             let mut parts = sort_text.split('.');
-            let Some(first) = parts.next() else { continue };
-            let Some(second) = parts.next() else { continue };
-            let Some(_) = parts.next() else { continue };
-            sort_text.replace_range(first.len() + second.len() + 1.., "");
+            let Some(sorting_category) = parts.next() else {
+                continue;
+            };
+            let Some(recent_usage) = parts.next() else {
+                continue;
+            };
+            let Some(name) = parts.next() else { continue };
+            let pyright_score_len = sorting_category.len() + 1 + recent_usage.len();
+
+            // In the case of completion suggestions requiring an import,
+            // pyright appends the character length of the import path for the
+            // symbol followed by the entire import path to the `sortText`.
+            // A lower import path length might imply a better completion result,
+            // thus we retain the import path length for the match score whilst
+            // removing the symbol name and import path from the `sortText`.
+            if let Some(import_name_length) = parts.next() {
+                let name_len = name.len() + 1;
+                sort_text.replace_range(
+                    pyright_score_len + name_len + import_name_length.len() + 1..,
+                    "",
+                );
+                sort_text.replace_range(pyright_score_len..pyright_score_len + name_len, "");
+            } else {
+                sort_text.replace_range(pyright_score_len.., "")
+            }
         }
     }
 
