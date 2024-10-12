@@ -212,9 +212,10 @@ impl LspAdapter for PythonLspAdapter {
 
             // In the case of completion suggestions requiring an import, pyright appends the
             // character length of the import path for the symbol followed by the entire import path
-            // to the `sortText`. A lower import path length for the same symbol implies a better
-            // completion result, thus we also consider the import path length for the `sort_text`
-            // as a last value for comparison.
+            // to the `sortText`. The `sortText` then has the form
+            // `XX.YYYY.name.importPathLength.fullImportPath`. A lower import path length for the
+            // same symbol implies a better completion result, thus we also consider the import path
+            // length for the `sort_text` as a last value for comparison.
             if let Some(import_name_length) = parts.next() {
                 let score_name_end = pyright_score_len + SEPERATOR_LEN + name.len() + SEPERATOR_LEN;
 
