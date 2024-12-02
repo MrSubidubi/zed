@@ -195,12 +195,6 @@ impl KeyIcon {
     }
 }
 
-/// Returns a textual representation of the key binding for the given [`Action`].
-pub fn text_for_action(action: &dyn Action, cx: &WindowContext) -> Option<String> {
-    let key_binding = cx.bindings_for_action(action).last().cloned()?;
-    Some(text_for_key_binding(key_binding, PlatformStyle::platform()))
-}
-
 /// Returns a textual representation of the key binding for the given [`Action`]
 /// as if the provided [`FocusHandle`] was focused.
 pub fn text_for_action_in(
