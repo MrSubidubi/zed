@@ -55,9 +55,7 @@ use telemetry_events::{AssistantEvent, AssistantKind, AssistantPhase};
 use terminal_view::terminal_panel::TerminalPanel;
 use text::{OffsetRangeExt, ToPoint as _};
 use theme::ThemeSettings;
-use ui::{
-    prelude::*, text_for_action, CheckboxWithLabel, IconButtonShape, KeyBinding, Popover, Tooltip,
-};
+use ui::{prelude::*, CheckboxWithLabel, IconButtonShape, KeyBinding, Popover, Tooltip};
 use util::{RangeExt, ResultExt};
 use workspace::{notifications::NotificationId, ItemHandle, Toast, Workspace};
 
@@ -1696,9 +1694,10 @@ impl PromptEditor {
     }
 
     fn placeholder_text(codegen: &Codegen, cx: &WindowContext) -> String {
-        let context_keybinding = text_for_action(&crate::ToggleFocus, cx)
-            .map(|keybinding| format!(" • {keybinding} for context"))
-            .unwrap_or_default();
+        let context_keybinding = format!(
+            " • {} for context",
+            cx.keystroke_text_for(&crate::ToggleFocus)
+        );
 
         let action = if codegen.is_insertion {
             "Generate"

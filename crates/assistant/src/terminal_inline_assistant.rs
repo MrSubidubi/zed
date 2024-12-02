@@ -32,7 +32,7 @@ use telemetry_events::{AssistantEvent, AssistantKind, AssistantPhase};
 use terminal::Terminal;
 use terminal_view::TerminalView;
 use theme::ThemeSettings;
-use ui::{prelude::*, text_for_action, IconButtonShape, Tooltip};
+use ui::{prelude::*, IconButtonShape, Tooltip};
 use util::ResultExt;
 use workspace::{notifications::NotificationId, Toast, Workspace};
 
@@ -738,9 +738,10 @@ impl PromptEditor {
     }
 
     fn placeholder_text(cx: &WindowContext) -> String {
-        let context_keybinding = text_for_action(&crate::ToggleFocus, cx)
-            .map(|keybinding| format!(" • {keybinding} for context"))
-            .unwrap_or_default();
+        let context_keybinding = format!(
+            " • {} for context",
+            cx.keystroke_text_for(&crate::ToggleFocus)
+        );
 
         format!("Generate…{context_keybinding} • ↓↑ for history")
     }
