@@ -408,15 +408,24 @@ impl Render for ErrorMessagePrompt {
                             .w_full()
                             .justify_between()
                             .child(
-                                svg()
-                                    .size(cx.text_style().font_size)
-                                    .flex_none()
-                                    .mr_2()
+                                h_flex()
                                     .mt(px(-2.0))
-                                    .map(|icon| {
-                                        icon.path(IconName::Warning.path())
-                                            .text_color(Color::Error.color(cx))
-                                    }),
+                                    .items_center()
+                                    .child(
+                                        svg()
+                                            .size(cx.text_style().font_size)
+                                            .flex_none()
+                                            .mr_2()
+                                            .map(|icon| {
+                                                icon.path(IconName::Warning.path())
+                                                    .text_color(Color::Error.color(cx))
+                                            }),
+                                    )
+                                    .child(
+                                        Label::new("Error")
+                                            .line_height_style(LineHeightStyle::UiLabel)
+                                            .color(Color::Error),
+                                    ),
                             )
                             .child(
                                 ui::IconButton::new("close", ui::IconName::Close)
