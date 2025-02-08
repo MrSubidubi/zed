@@ -1,0 +1,151 @@
+#!/usr/bin/env bash
+
+UNSORTED_FILE="unsorted"
+SORTED_FILE="sorted"
+
+DEFAULT_SEARCH_PATTERN="\[.*dependencies\]"
+DEFAULT_END_PATTERN="\[.*\]"
+
+mapfile -t cargo_toml_files < <(git ls-files 'Cargo.toml' '*/Cargo.toml')
+
+escape_regex_chars() {
+    echo "${1//[^-A-Za-z0-9_]/\\&}"
+}
+
+# Checks whether the dependencies in a file segment between the start pattern
+# and the end pattern or the next section are sorted alphabetically.
+check_sorting_for_file_segment() {
+    local file="$1"
+    local section_label="$2"
+    local start_pattern
+    start_pattern=$(escape_regex_chars "$section_label")
+    local end_pattern
+
+    # If no end pattern is provided, use the next section as the end pattern
+    if [ -z "$3" ]; then
+        end_pattern="^$DEFAULT_END_PATTERN"
+    else
+        end_pattern="$3"
+    fi
+
+    # Use process substitution to capture the output of awk in an array
+    local -a raw_dependencies
+    # Get all non-empty non-commented lines in the section between the start
+    # and end pattern. Returns the name of the dependency and the entire line.
+    mapfile -t raw_dependencies < <(awk '
+        BEGIN {
+            FS = "[.= ]"
+        }
+
+        /^'"$start_pattern"'/ {
+            in_dependencies = 1
+            next
+        }
+        /'"$end_pattern"'/ {
+            if (in_dependencies) {
+                exit
+            }
+        }
+        in_dependencies && /^[[:alpha:]]/ {
+            print $1
+            print
+        }
+    ' "$file" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
+    local dependencies=()
+    local -A name_mapping
+    # Split up the array into a list of dependency names and a mapping from dependency
+    # names to the original line.
+    for ((i=0; i<${#raw_dependencies[@]}; i+=2)); do
+        local name="${raw_dependencies[$i]}"
+        local line="${raw_dependencies[$i+1]}"
+        dependencies+=("$name")
+        name_mapping[$name]=$line
+    done
+
+    # Check if dependencies are sorted and identify unsorted lines
+    if [ ${#dependencies[@]} -gt 0 ]; then
+        local -a sorted_dependencies
+        mapfile -t sorted_dependencies < <(printf '%s\n' "${dependencies[@]}" | sort)
+        local unsorted_lines=()
+        local sorted_lines=()
+
+
+        # Check if the dependencies are sorted, if not, store all lines deemed to
+        # be inequal to display a diff later on.
+        local is_unsorted=false
+        for i in "${!dependencies[@]}"; do
+            dep_name=${dependencies[$i]}
+            sorted_dep_name=${sorted_dependencies[$i]}
+            unsorted_lines+=("${name_mapping["$dep_name"]}")
+            sorted_lines+=("${name_mapping["$sorted_dep_name"]}")
+            if [[ "$dep_name" != "$sorted_dep_name" ]]; then
+                is_unsorted=true
+            fi
+        done
+
+        # In case of any unsorted lines, print them seperated by a delimiter
+        if [[ "$is_unsorted" == true ]]; then
+            { echo "$section_label:"; printf '%s\n' "${unsorted_lines[@]}"; echo; }>> "$UNSORTED_FILE"
+            { echo "$section_label:"; printf '%s\n' "${sorted_lines[@]}"; echo; }>> "$SORTED_FILE"
+            return 1
+        fi
+    fi
+    return 0
+}
+
+# Print the difference between the current ordering and the sorted ordering for
+# a given diff.
+print_diff() {
+    local file="$1"
+    # Display the difference in sorting for the given diff, cutting off the first 6 lines
+    # containing inaccurate git metadata
+    diff=$(git --no-pager  diff --color=always --no-index "$UNSORTED_FILE" "$SORTED_FILE" | tail -n +6)
+
+    # remove diff-files
+    rm "$UNSORTED_FILE" "$SORTED_FILE"
+
+    echo "Found unsorted dependencies in $file:"
+    # Remove any other lines containing metadata from git and indent the diff for readability
+    echo "$diff" | sed 's/.*@.*/ \.\.\./' | sed 's/^/    /'
+    echo
+}
+
+any_unsorted=0
+# Process each Cargo.toml file
+for file in "${cargo_toml_files[@]}"; do
+    # Determine the grep pattern to choose for this file.
+    if [ "$file" == "Cargo.toml" ]; then
+        # In the root Cargo.toml, dependencies are split by local and external dependencies.
+        pattern="^(\[.*\.dependencies\]|# External crates)"
+        end_pattern="^($DEFAULT_END_PATTERN|# External crates)"
+    elif [[ "$file" =~ /gpui/Cargo.toml ]]; then
+        # In the GPUI-crate, there are multiple comments regarding dependencies for separate platforms,
+        # thus we sort everything inbetween these comments.
+        pattern="^($DEFAULT_SEARCH_PATTERN|#)"
+        end_pattern="^($DEFAULT_END_PATTERN|#)"
+    else
+        pattern="^$DEFAULT_SEARCH_PATTERN"
+    fi
+
+    file_unsorted=0
+    # Process the Cargo.toml file
+    while read -r section_label; do
+        if ! check_sorting_for_file_segment "$file" "$section_label" "$end_pattern"; then
+            if [ "$any_unsorted" -eq 0 ]; then
+                echo "Found unsorted dependencies in Cargo.toml-files:"
+                any_unsorted=1
+            fi
+            file_unsorted=1
+        fi
+    done < <(grep -E "$pattern" "$file")
+    if [ "$file_unsorted" -eq 1 ]; then
+        print_diff "$file"
+    fi
+done
+
+if [ "$any_unsorted" -eq 0 ]; then
+    echo "All dependencies are sorted."
+fi
+
+exit "$any_unsorted"
