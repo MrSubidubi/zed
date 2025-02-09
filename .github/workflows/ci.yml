@@ -88,6 +88,9 @@ jobs:
         with:
           config: ./typos.toml
 
+      - name: Check for sorted dependencies
+        run: script/check-sorted-dependencies
+
   macos_tests:
     timeout-minutes: 60
     name: (macOS) Run Clippy and tests
