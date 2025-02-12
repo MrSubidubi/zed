@@ -22,10 +22,10 @@ picker.workspace = true
 postage.workspace = true
 serde.workspace = true
 settings.workspace = true
+telemetry.workspace = true
 theme.workspace = true
 ui.workspace = true
 util.workspace = true
-telemetry.workspace = true
 workspace.workspace = true
 zed_actions.workspace = true
 

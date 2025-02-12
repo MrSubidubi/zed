@@ -40,8 +40,8 @@ workspace.workspace = true
 worktree.workspace = true
 
 [dev-dependencies]
-search = { workspace = true, features = ["test-support"] }
 pretty_assertions.workspace = true
+search = { workspace = true, features = ["test-support"] }
 
 [package.metadata.cargo-machete]
 ignored = ["log"]

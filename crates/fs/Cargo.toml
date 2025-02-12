@@ -24,8 +24,8 @@ libc.workspace = true
 log.workspace = true
 parking_lot.workspace = true
 paths.workspace = true
-rope.workspace = true
 proto.workspace = true
+rope.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 smol.workspace = true
@@ -35,9 +35,9 @@ time.workspace = true
 util.workspace = true
 
 [target.'cfg(target_os = "macos")'.dependencies]
+cocoa = "0.26"
 fsevent.workspace = true
 objc = "0.2"
-cocoa = "0.26"
 
 [target.'cfg(not(target_os = "macos"))'.dependencies]
 notify = "6.1.1"

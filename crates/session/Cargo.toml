@@ -20,6 +20,6 @@ test-support = [
 [dependencies]
 db.workspace = true
 gpui.workspace = true
-uuid.workspace = true
-util.workspace = true
 serde_json.workspace = true
+util.workspace = true
+uuid.workspace = true

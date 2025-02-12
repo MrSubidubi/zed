@@ -79,5 +79,5 @@ workspace.workspace = true
 zed_actions.workspace = true
 
 [dev-dependencies]
-rand.workspace = true
 indoc.workspace = true
+rand.workspace = true

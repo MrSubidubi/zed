@@ -290,8 +290,8 @@ ollama = { path = "crates/ollama" }
 open_ai = { path = "crates/open_ai" }
 outline = { path = "crates/outline" }
 outline_panel = { path = "crates/outline_panel" }
-paths = { path = "crates/paths" }
 panel = { path = "crates/panel" }
+paths = { path = "crates/paths" }
 picker = { path = "crates/picker" }
 plugin = { path = "crates/plugin" }
 plugin_macros = { path = "crates/plugin_macros" }
@@ -384,7 +384,6 @@ bitflags = "2.6.0"
 blade-graphics = { git = "https://github.com/kvark/blade", rev = "b16f5c7bd873c7126f48c82c39e7ae64602ae74f" }
 blade-macros = { git = "https://github.com/kvark/blade", rev = "b16f5c7bd873c7126f48c82c39e7ae64602ae74f" }
 blade-util = { git = "https://github.com/kvark/blade", rev = "b16f5c7bd873c7126f48c82c39e7ae64602ae74f" }
-naga = { version = "23.1.0", features = ["wgsl-in"] }
 blake3 = "1.5.3"
 bytes = "1.0"
 cargo_metadata = "0.19"
@@ -416,8 +415,8 @@ handlebars = "4.3"
 heed = { version = "0.21.0", features = ["read-txn-no-tls"] }
 hex = "0.4.3"
 html5ever = "0.27.0"
-hyper = "0.14"
 http = "1.1"
+hyper = "0.14"
 ignore = "0.4.22"
 image = "0.25.1"
 indexmap = { version = "2.7.0", features = ["serde"] }
@@ -438,6 +437,8 @@ livekit = { git = "https://github.com/zed-industries/livekit-rust-sdks", rev = "
 ], default-features = false }
 log = { version = "0.4.16", features = ["kv_unstable_serde", "serde"] }
 markup5ever_rcdom = "0.3.0"
+metal = "0.31"
+naga = { version = "23.1.0", features = ["wgsl-in"] }
 nanoid = "0.4"
 nbformat = { version = "0.10.0" }
 nix = "0.29"
@@ -447,10 +448,10 @@ palette = { version = "0.7.5", default-features = false, features = ["std"] }
 parking_lot = "0.12.1"
 pathdiff = "0.2"
 pet = { git = "https://github.com/microsoft/python-environment-tools.git", rev = "1abe5cec5ebfbe97ca71746a4cfc7fe89bddf8e0" }
-pet-fs = { git = "https://github.com/microsoft/python-environment-tools.git", rev = "1abe5cec5ebfbe97ca71746a4cfc7fe89bddf8e0" }
-pet-pixi = { git = "https://github.com/microsoft/python-environment-tools.git", rev = "1abe5cec5ebfbe97ca71746a4cfc7fe89bddf8e0" }
 pet-conda = { git = "https://github.com/microsoft/python-environment-tools.git", rev = "1abe5cec5ebfbe97ca71746a4cfc7fe89bddf8e0" }
 pet-core = { git = "https://github.com/microsoft/python-environment-tools.git", rev = "1abe5cec5ebfbe97ca71746a4cfc7fe89bddf8e0" }
+pet-fs = { git = "https://github.com/microsoft/python-environment-tools.git", rev = "1abe5cec5ebfbe97ca71746a4cfc7fe89bddf8e0" }
+pet-pixi = { git = "https://github.com/microsoft/python-environment-tools.git", rev = "1abe5cec5ebfbe97ca71746a4cfc7fe89bddf8e0" }
 pet-poetry = { git = "https://github.com/microsoft/python-environment-tools.git", rev = "1abe5cec5ebfbe97ca71746a4cfc7fe89bddf8e0" }
 pet-reporter = { git = "https://github.com/microsoft/python-environment-tools.git", rev = "1abe5cec5ebfbe97ca71746a4cfc7fe89bddf8e0" }
 postage = { version = "0.5", features = ["futures-traits"] }
@@ -478,8 +479,8 @@ rsa = "0.9.6"
 runtimelib = { version = "0.25.0", default-features = false, features = [
     "async-dispatcher-runtime",
 ] }
-rustc-demangle = "0.1.23"
 rust-embed = { version = "8.4", features = ["include-exclude"] }
+rustc-demangle = "0.1.23"
 rustc-hash = "2.1.0"
 rustls = { version = "0.23.22" }
 rustls-platform-verifier = "0.5.0"
@@ -521,14 +522,15 @@ time = { version = "0.3", features = [
     "formatting",
 ] }
 tiny_http = "0.8"
-toml = "0.8"
 tokio = { version = "1" }
+toml = "0.8"
 tower-http = "0.4.4"
 tree-sitter = { version = "0.24", features = ["wasm"] }
 tree-sitter-bash = "0.23"
 tree-sitter-c = "0.23"
 tree-sitter-cpp = "0.23"
 tree-sitter-css = "0.23"
+tree-sitter-diff = "0.1.0"
 tree-sitter-elixir = "0.3"
 tree-sitter-embedded-template = "0.23.0"
 tree-sitter-gitcommit = {git  = "https://github.com/zed-industries/tree-sitter-git-commit", rev = "88309716a69dd13ab83443721ba6e0b491d37ee9"}
@@ -536,7 +538,6 @@ tree-sitter-go = "0.23"
 tree-sitter-go-mod = { git = "https://github.com/camdencheek/tree-sitter-go-mod", rev = "6efb59652d30e0e9cd5f3b3a669afd6f1a926d3c", package = "tree-sitter-gomod" }
 tree-sitter-gowork = { git = "https://github.com/zed-industries/tree-sitter-go-work", rev = "acb0617bf7f4fda02c6217676cc64acb89536dc7" }
 tree-sitter-heex = { git = "https://github.com/zed-industries/tree-sitter-heex", rev = "1dd45142fbb05562e35b2040c6129c9bca346592" }
-tree-sitter-diff = "0.1.0"
 tree-sitter-html = "0.20"
 tree-sitter-jsdoc = "0.23"
 tree-sitter-json = "0.24"
@@ -548,13 +549,13 @@ tree-sitter-rust = "0.23"
 tree-sitter-typescript = "0.23"
 tree-sitter-yaml = { git = "https://github.com/zed-industries/tree-sitter-yaml", rev = "baff0b51c64ef6a1fb1f8390f3ad6015b83ec13a" }
 unicase = "2.6"
-unindent = "0.2.0"
-unicode-segmentation = "1.10"
 unicode-script = "0.5.7"
+unicode-segmentation = "1.10"
+unindent = "0.2.0"
 url = "2.2"
 uuid = { version = "1.1.2", features = ["v4", "v5", "v7", "serde"] }
-wasmparser = "0.217"
 wasm-encoder = "0.217"
+wasmparser = "0.217"
 wasmtime = { version = "25", default-features = false, features = [
     "async",
     "demangle",
@@ -567,7 +568,6 @@ which = "6.0.0"
 wit-component = "0.201"
 zed_llm_client = "0.4"
 zstd = "0.11"
-metal = "0.31"
 
 [workspace.dependencies.async-stripe]
 git = "https://github.com/zed-industries/async-stripe"

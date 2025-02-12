@@ -21,8 +21,8 @@ path = "src/search.rs"
 doctest = false
 
 [dependencies]
-anyhow.workspace = true
 any_vec.workspace = true
+anyhow.workspace = true
 bitflags.workspace = true
 collections.workspace = true
 editor.workspace = true

@@ -28,16 +28,16 @@ cpal = "0.15"
 futures.workspace = true
 gpui.workspace = true
 http_2 = { package = "http", version = "0.2.1" }
+http_client.workspace = true
+image.workspace = true
 livekit_server.workspace = true
 log.workspace = true
 media.workspace = true
 nanoid = { workspace = true, optional = true }
 parking_lot.workspace = true
 postage.workspace = true
-util.workspace = true
-http_client.workspace = true
 smallvec.workspace = true
-image.workspace = true
+util.workspace = true
 
 [target.'cfg(not(all(target_os = "windows", target_env = "gnu")))'.dependencies]
 livekit.workspace = true

@@ -12,7 +12,7 @@ workspace = true
 path = "src/telemetry.rs"
 
 [dependencies]
+futures.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 telemetry_events.workspace = true
-futures.workspace = true

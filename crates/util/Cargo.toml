@@ -20,8 +20,8 @@ anyhow.workspace = true
 async-fs.workspace = true
 collections.workspace = true
 dirs.workspace = true
-futures-lite.workspace = true
 futures.workspace = true
+futures-lite.workspace = true
 git2 = { workspace = true, optional = true }
 globset.workspace = true
 itertools.workspace = true
@@ -41,8 +41,8 @@ util_macros = { workspace = true, optional = true }
 libc.workspace = true
 
 [target.'cfg(windows)'.dependencies]
-tendril = "0.4.3"
 dunce = "1.0"
+tendril = "0.4.3"
 
 [dev-dependencies]
 git2.workspace = true

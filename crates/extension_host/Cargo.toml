@@ -34,8 +34,8 @@ lsp.workspace = true
 node_runtime.workspace = true
 paths.workspace = true
 project.workspace = true
-remote.workspace = true
 release_channel.workspace = true
+remote.workspace = true
 schemars.workspace = true
 semantic_version.workspace = true
 serde.workspace = true
@@ -49,8 +49,8 @@ toml.workspace = true
 url.workspace = true
 util.workspace = true
 wasmparser.workspace = true
-wasmtime-wasi.workspace = true
 wasmtime.workspace = true
+wasmtime-wasi.workspace = true
 
 [dev-dependencies]
 ctor.workspace = true

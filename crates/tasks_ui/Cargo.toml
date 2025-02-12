@@ -17,17 +17,17 @@ editor.workspace = true
 file_icons.workspace = true
 fuzzy.workspace = true
 gpui.workspace = true
+language.workspace = true
 menu.workspace = true
 picker.workspace = true
 project.workspace = true
-task.workspace = true
 schemars.workspace = true
 serde.workspace = true
 settings.workspace = true
+task.workspace = true
 ui.workspace = true
 util.workspace = true
 workspace.workspace = true
-language.workspace = true
 zed_actions.workspace = true
 
 [dev-dependencies]

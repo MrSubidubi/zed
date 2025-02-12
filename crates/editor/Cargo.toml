@@ -41,9 +41,9 @@ db.workspace = true
 buffer_diff.workspace = true
 emojis.workspace = true
 file_icons.workspace = true
+fs.workspace = true
 futures.workspace = true
 fuzzy.workspace = true
-fs.workspace = true
 git.workspace = true
 gpui.workspace = true
 http_client.workspace = true
@@ -75,16 +75,16 @@ sum_tree.workspace = true
 task.workspace = true
 telemetry.workspace = true
 text.workspace = true
+theme.workspace = true
 time.workspace = true
 time_format.workspace = true
-theme.workspace = true
 tree-sitter-html = { workspace = true, optional = true }
 tree-sitter-rust = { workspace = true, optional = true }
 tree-sitter-typescript = { workspace = true, optional = true }
-unicode-segmentation.workspace = true
-unicode-script.workspace = true
-unindent = { workspace = true, optional = true }
 ui.workspace = true
+unicode-script.workspace = true
+unicode-segmentation.workspace = true
+unindent = { workspace = true, optional = true }
 url.workspace = true
 util.workspace = true
 uuid.workspace = true
@@ -95,12 +95,13 @@ zed_actions.workspace = true
 ctor.workspace = true
 env_logger.workspace = true
 gpui = { workspace = true, features = ["test-support"] }
+http_client = { workspace = true, features = ["test-support"] }
 language = { workspace = true, features = ["test-support"] }
 lsp = { workspace = true, features = ["test-support"] }
 multi_buffer = { workspace = true, features = ["test-support"] }
 project = { workspace = true, features = ["test-support"] }
-release_channel.workspace = true
 rand.workspace = true
+release_channel.workspace = true
 settings = { workspace = true, features = ["test-support"] }
 tempfile.workspace = true
 text = { workspace = true, features = ["test-support"] }
@@ -111,4 +112,3 @@ tree-sitter-typescript.workspace = true
 unindent.workspace = true
 util = { workspace = true, features = ["test-support"] }
 workspace = { workspace = true, features = ["test-support"] }
-http_client = { workspace = true, features = ["test-support"] }

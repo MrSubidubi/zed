@@ -27,8 +27,8 @@ futures.workspace = true
 gpui.workspace = true
 http_client.workspace = true
 log.workspace = true
-paths.workspace = true
 parking_lot.workspace = true
+paths.workspace = true
 postage.workspace = true
 rand.workspace = true
 release_channel.workspace = true
@@ -39,6 +39,7 @@ serde_json.workspace = true
 settings.workspace = true
 sha2.workspace = true
 smol.workspace = true
+telemetry.workspace = true
 telemetry_events.workspace = true
 text.workspace = true
 thiserror.workspace = true
@@ -48,20 +49,19 @@ tokio-socks = { version = "0.5.2", default-features = false, features = ["future
 url.workspace = true
 util.workspace = true
 worktree.workspace = true
-telemetry.workspace = true
 
 [dev-dependencies]
 clock = { workspace = true, features = ["test-support"] }
 collections = { workspace = true, features = ["test-support"] }
 gpui = { workspace = true, features = ["test-support"] }
+http_client = { workspace = true, features = ["test-support"] }
 rpc = { workspace = true, features = ["test-support"] }
 settings = { workspace = true, features = ["test-support"] }
 util = { workspace = true, features = ["test-support"] }
-http_client = { workspace = true, features = ["test-support"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 windows.workspace = true
 
 [target.'cfg(target_os = "macos")'.dependencies]
-cocoa.workspace = true
 async-native-tls = { version = "0.5.0", features = ["vendored"] }
+cocoa.workspace = true
