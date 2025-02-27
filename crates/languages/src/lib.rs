@@ -18,6 +18,7 @@ mod c;
 mod css;
 mod go;
 mod json;
+mod markdown;
 mod python;
 mod rust;
 mod tailwind;
@@ -194,7 +195,7 @@ pub fn init(languages: Arc<LanguageRegistry>, node_runtime: NodeRuntime, cx: &mu
         ))],
         json_task_context()
     );
-    language!("markdown");
+    language!("markdown", vec![Arc::new(markdown::MarkdownLspAdapter)]);
     language!("markdown-inline");
     language!(
         "python",
