@@ -3,7 +3,7 @@
 Markdown support is available natively in Zed.
 
 - Tree-sitter: [tree-sitter-markdown](https://github.com/tree-sitter-grammars/tree-sitter-markdown)
-- Language Server: N/A
+- Language Server: [artempyanykh/marksman](https://github.com/artempyanykh/marksman)
 
 ## Syntax Highlighting Code Blocks
 
