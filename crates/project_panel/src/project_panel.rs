@@ -3561,6 +3561,8 @@ impl ProjectPanel {
     ) -> Stateful<Div> {
         const GROUP_NAME: &str = "project_entry";
 
+        const CUT_ENTRY_OPACITY: f32 = 0.60;
+
         let kind = details.kind;
         let settings = ProjectPanelSettings::get_global(cx);
         let show_editor = details.is_editing && !details.is_processing;
@@ -3643,6 +3645,7 @@ impl ProjectPanel {
             .border_r_2()
             .border_color(border_color)
             .hover(|style| style.bg(bg_hover_color).border_color(border_hover_color))
+            .when(details.is_cut, |div| div.opacity(CUT_ENTRY_OPACITY))
             .when(is_local, |div| {
                 div.on_drag_move::<ExternalPaths>(cx.listener(
                     move |this, event: &DragMoveEvent<ExternalPaths>, _, cx| {
