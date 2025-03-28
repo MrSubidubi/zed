@@ -2035,7 +2035,25 @@ impl ProjectPanel {
         let mut ix = 0;
         {
             let worktree = worktree.read(cx);
+<<<<<<< Updated upstream
             while worktree.entry_for_path(&new_path).is_some() {
+=======
+            loop {
+                match worktree.entry_for_path(&new_path) {
+                    // Should we be cutting a file onto itself, we do not need to disambiguate it.
+                    Some(entry)
+                        if is_cut
+                            && worktree.id() == source.worktree_id
+                            && entry.id == source.entry_id =>
+                    {
+                        return Some(None);
+                    }
+                    None => return Some(Some((new_path, disambiguation_range))),
+
+                    _ => {}
+                }
+
+>>>>>>> Stashed changes
                 new_path.pop();
 
                 let mut new_file_name = file_name_without_extension.to_os_string();
@@ -2189,6 +2207,14 @@ impl ProjectPanel {
                 anyhow::Ok(())
             })
             .detach_and_log_err(cx);
+
+            if clip_is_cut {
+                // Convert the clipboard cut entry to a copy entry after the first paste.
+                self.clipboard = self
+                    .clipboard
+                    .take()
+                    .map(|clipboard_entry| clipboard_entry.to_copy_entry());
+            }
 
             self.expand_entry(worktree_id, entry.id, cx);
             Some(())
@@ -4851,6 +4877,13 @@ impl ClipboardEntry {
     fn items(&self) -> &BTreeSet<SelectedEntry> {
         match self {
             ClipboardEntry::Copied(entries) | ClipboardEntry::Cut(entries) => entries,
+        }
+    }
+
+    fn to_copy_entry(self) -> Self {
+        match self {
+            ClipboardEntry::Copied(_) => self,
+            ClipboardEntry::Cut(entries) => ClipboardEntry::Copied(entries),
         }
     }
 }
