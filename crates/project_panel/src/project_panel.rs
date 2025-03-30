@@ -2013,8 +2013,9 @@ impl ProjectPanel {
         &self,
         source: &SelectedEntry,
         (worktree, target_entry): (Entity<Worktree>, &Entry),
+        is_cut: bool,
         cx: &App,
-    ) -> Option<(PathBuf, Option<Range<usize>>)> {
+    ) -> Option<Option<(PathBuf, Option<Range<usize>>)>> {
         let mut new_path = target_entry.path.to_path_buf();
         // If we're pasting into a file, or a directory into itself, go up one level.
         if target_entry.is_file() || (target_entry.is_dir() && target_entry.id == source.entry_id) {
@@ -2035,12 +2036,10 @@ impl ProjectPanel {
         let mut ix = 0;
         {
             let worktree = worktree.read(cx);
-<<<<<<< Updated upstream
-            while worktree.entry_for_path(&new_path).is_some() {
-=======
             loop {
                 match worktree.entry_for_path(&new_path) {
-                    // Should we be cutting a file onto itself, we do not need to disambiguate it.
+                    // Should we be cutting an entry onto itself, we do not need a
+                    // paste path for the entry at all.
                     Some(entry)
                         if is_cut
                             && worktree.id() == source.worktree_id
@@ -2048,12 +2047,13 @@ impl ProjectPanel {
                     {
                         return Some(None);
                     }
+
                     None => return Some(Some((new_path, disambiguation_range))),
 
-                    _ => {}
+                    // file path needs disambiguation
+                    Some(_) => {}
                 }
 
->>>>>>> Stashed changes
                 new_path.pop();
 
                 let mut new_file_name = file_name_without_extension.to_os_string();
@@ -2079,7 +2079,6 @@ impl ProjectPanel {
                 ix += 1;
             }
         }
-        Some((new_path, disambiguation_range))
     }
 
     fn paste(&mut self, _: &Paste, window: &mut Window, cx: &mut Context<Self>) {
@@ -2094,15 +2093,25 @@ impl ProjectPanel {
             enum PasteTask {
                 Rename(Task<Result<CreatedEntry>>),
                 Copy(Task<Result<Option<Entry>>>),
+                Idle(Option<Entry>),
             }
             let mut paste_entry_tasks: IndexMap<(ProjectEntryId, bool), PasteTask> =
                 IndexMap::default();
             let mut disambiguation_range = None;
             let clip_is_cut = clipboard_entries.is_cut();
             for clipboard_entry in clipboard_entries.items() {
-                let (new_path, new_disambiguation_range) =
-                    self.create_paste_path(clipboard_entry, self.selected_sub_entry(cx)?, cx)?;
                 let clip_entry_id = clipboard_entry.entry_id;
+                let Some((new_path, new_disambiguation_range)) = self.create_paste_path(
+                    clipboard_entry,
+                    self.selected_sub_entry(cx)?,
+                    clip_is_cut,
+                    cx,
+                )?
+                else {
+                    let entry = worktree.read(cx).entry_for_id(clip_entry_id).cloned();
+                    paste_entry_tasks.insert((clip_entry_id, false), PasteTask::Idle(entry));
+                    continue;
+                };
                 let is_same_worktree = clipboard_entry.worktree_id == worktree_id;
                 let relative_worktree_source_path = if !is_same_worktree {
                     let target_base_path = worktree.read(cx).abs_path();
@@ -2160,6 +2169,7 @@ impl ProjectPanel {
                                 }
                             }
                         }
+                        PasteTask::Idle(entry) => last_succeed = entry,
                     }
                 }
                 // remove entry for cut in difference worktree
@@ -3001,8 +3011,9 @@ impl ProjectPanel {
                     let (new_path, new_disambiguation_range) = self.create_paste_path(
                         selection,
                         (target_worktree.clone(), &target_entry),
+                        false,
                         cx,
-                    )?;
+                    )??;
 
                     let task = self.project.update(cx, |project, cx| {
                         project.copy_entry(selection.entry_id, None, new_path, cx)

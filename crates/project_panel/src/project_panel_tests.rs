@@ -1127,6 +1127,49 @@ async fn test_copy_paste(cx: &mut gpui::TestAppContext) {
 }
 
 #[gpui::test]
+async fn test_repeated_cut(cx: &mut gpui::TestAppContext) {
+    init_test(cx);
+
+    let fs = FakeFs::new(cx.executor().clone());
+    fs.insert_tree(
+        "/root",
+        json!({
+            "one.txt": "",
+            "target": {}
+        }),
+    )
+    .await;
+
+    let project = Project::test(fs.clone(), ["/root".as_ref()], cx).await;
+    let workspace = cx.add_window(|window, cx| Workspace::test_new(project.clone(), window, cx));
+    let cx = &mut VisualTestContext::from_window(*workspace, cx);
+    let panel = workspace.update(cx, ProjectPanel::new).unwrap();
+
+    select_path(&panel, "root/one.txt", cx);
+    panel.update_in(cx, |panel, window, cx| {
+        panel.cut(&Default::default(), window, cx);
+    });
+
+    select_path(&panel, "root/target", cx);
+    panel.update_in(cx, |panel, window, cx| {
+        panel.select_next(&Default::default(), window, cx);
+        panel.paste(&Default::default(), window, cx);
+    });
+    cx.executor().run_until_parked();
+
+    assert_eq!(
+        visible_entries_as_strings(&panel, 0..50, cx),
+        &[
+            //
+            "v root",
+            "      one.txt",
+            "    v target",
+            "            one.txt  <== selected  <== marked",
+        ]
+    );
+}
+
+#[gpui::test]
 async fn test_cut_paste_between_different_worktrees(cx: &mut gpui::TestAppContext) {
     init_test(cx);
 
