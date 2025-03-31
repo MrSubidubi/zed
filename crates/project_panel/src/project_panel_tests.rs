@@ -1127,15 +1127,21 @@ async fn test_copy_paste(cx: &mut gpui::TestAppContext) {
 }
 
 #[gpui::test]
-async fn test_repeated_cut(cx: &mut gpui::TestAppContext) {
+async fn test_cut_repeated_paste(cx: &mut gpui::TestAppContext) {
     init_test(cx);
 
     let fs = FakeFs::new(cx.executor().clone());
     fs.insert_tree(
         "/root",
         json!({
-            "one.txt": "",
-            "target": {}
+            "dir1": {
+                "file1.txt": "",
+                "file2.txt": "",
+            },
+            "dir2": {
+                "subdir": {},
+            },
+            "dir3": {},
         }),
     )
     .await;
@@ -1145,27 +1151,239 @@ async fn test_repeated_cut(cx: &mut gpui::TestAppContext) {
     let cx = &mut VisualTestContext::from_window(*workspace, cx);
     let panel = workspace.update(cx, ProjectPanel::new).unwrap();
 
-    select_path(&panel, "root/one.txt", cx);
+    toggle_expand_dir(&panel, "root/dir1", cx);
+    toggle_expand_dir(&panel, "root/dir2", cx);
+
+    // Test single file cut and multiple pastes
+    select_path(&panel, "root/dir1/file1.txt", cx);
     panel.update_in(cx, |panel, window, cx| {
-        panel.cut(&Default::default(), window, cx);
+        panel.cut(&Cut, window, cx);
     });
 
-    select_path(&panel, "root/target", cx);
+    select_path(&panel, "root/dir2", cx);
     panel.update_in(cx, |panel, window, cx| {
-        panel.select_next(&Default::default(), window, cx);
-        panel.paste(&Default::default(), window, cx);
+        panel.paste(&Paste, window, cx);
     });
     cx.executor().run_until_parked();
 
     assert_eq!(
-        visible_entries_as_strings(&panel, 0..50, cx),
+        visible_entries_as_strings(&panel, 0..15, cx),
         &[
-            //
             "v root",
-            "      one.txt",
-            "    v target",
-            "            one.txt  <== selected  <== marked",
-        ]
+            "    v dir1",
+            "          file2.txt",
+            "    v dir2",
+            "        > subdir",
+            "          file1.txt  <== selected  <== marked",
+            "    > dir3",
+        ],
+        "First paste should move file1.txt to dir2"
+    );
+
+    select_path(&panel, "root/dir3", cx);
+    panel.update_in(cx, |panel, window, cx| {
+        panel.paste(&Paste, window, cx);
+    });
+    cx.executor().run_until_parked();
+
+    assert_eq!(
+        visible_entries_as_strings(&panel, 0..15, cx),
+        &[
+            "v root",
+            "    v dir1",
+            "          file2.txt",
+            "    v dir2",
+            "        > subdir",
+            "          file1.txt",
+            "    v dir3",
+            "          file1.txt  <== selected  <== marked",
+        ],
+        "Second paste should copy file1.txt to dir3"
+    );
+
+    panel.update_in(cx, |panel, window, cx| {
+        panel.cancel(&menu::Cancel {}, window, cx)
+    });
+    cx.executor().run_until_parked();
+
+    // Test directory cut and multiple pastes
+    select_path(&panel, "root/dir2/subdir", cx);
+    panel.update_in(cx, |panel, window, cx| {
+        panel.cut(&Cut, window, cx);
+    });
+
+    select_path(&panel, "root/dir1", cx);
+    panel.update_in(cx, |panel, window, cx| {
+        panel.paste(&Paste, window, cx);
+    });
+    cx.executor().run_until_parked();
+
+    assert_eq!(
+        visible_entries_as_strings(&panel, 0..15, cx),
+        &[
+            "v root",
+            "    v dir1",
+            "        > subdir  <== selected",
+            "          file2.txt",
+            "    v dir2",
+            "          file1.txt",
+            "    v dir3",
+            "          file1.txt",
+        ],
+        "First paste should move subdir to dir1"
+    );
+
+    select_path(&panel, "root/dir3", cx);
+    panel.update_in(cx, |panel, window, cx| {
+        panel.paste(&Paste, window, cx);
+    });
+    cx.executor().run_until_parked();
+
+    assert_eq!(
+        visible_entries_as_strings(&panel, 0..15, cx),
+        &[
+            "v root",
+            "    v dir1",
+            "        > subdir",
+            "          file2.txt",
+            "    v dir2",
+            "          file1.txt",
+            "    v dir3",
+            "        > subdir  <== selected",
+            "          file1.txt",
+        ],
+        "Second paste should copy subdir to dir3"
+    );
+
+    panel.update_in(cx, |panel, window, cx| {
+        panel.cancel(&menu::Cancel {}, window, cx)
+    });
+    cx.executor().run_until_parked();
+
+    // Test cut and paste with multiple selections
+    cx.simulate_modifiers_change(gpui::Modifiers {
+        control: true,
+        ..Default::default()
+    });
+
+    select_path_with_mark(&panel, "root/dir2/file1.txt", cx);
+    select_path_with_mark(&panel, "root/dir1/file2.txt", cx);
+
+    panel.update_in(cx, |panel, window, cx| {
+        panel.cut(&Cut, window, cx);
+    });
+
+    // First paste into root directory
+    select_path(&panel, "root", cx);
+    panel.update_in(cx, |panel, window, cx| {
+        panel.paste(&Paste, window, cx);
+    });
+    cx.executor().run_until_parked();
+
+    assert_eq!(
+        visible_entries_as_strings(&panel, 0..15, cx),
+        &[
+            "v root",
+            "    v dir1",
+            "        > subdir",
+            "    v dir2",
+            "    v dir3",
+            "        > subdir",
+            "          file1.txt",
+            "      file1.txt  <== marked",
+            "      file2.txt  <== selected  <== marked",
+        ],
+        "First paste of multiple files should move them to root"
+    );
+
+    panel.update_in(cx, |panel, window, cx| {
+        panel.cancel(&menu::Cancel {}, window, cx)
+    });
+    cx.executor().run_until_parked();
+
+    // Second paste into dir1
+    select_path(&panel, "root/dir1", cx);
+    panel.update_in(cx, |panel, window, cx| {
+        panel.paste(&Paste, window, cx);
+    });
+    cx.executor().run_until_parked();
+
+    assert_eq!(
+        visible_entries_as_strings(&panel, 0..15, cx),
+        &[
+            "v root",
+            "    v dir1",
+            "        > subdir",
+            "          file1.txt",
+            "          file2.txt  <== selected",
+            "    v dir2",
+            "    v dir3",
+            "        > subdir",
+            "          file1.txt",
+            "      file1.txt",
+            "      file2.txt",
+        ],
+        "Second paste of multiple files should copy them to dir1"
+    );
+}
+
+#[gpui::test]
+async fn test_cut_paste_to_same_location(cx: &mut gpui::TestAppContext) {
+    init_test(cx);
+
+    let fs = FakeFs::new(cx.executor().clone());
+    fs.insert_tree(
+        "/root",
+        json!({
+            "dir1": {
+                "file1.txt": "",
+                "file2.txt": "",
+            },
+            "file3.txt": ""
+        }),
+    )
+    .await;
+
+    let project = Project::test(fs.clone(), ["/root".as_ref()], cx).await;
+    let workspace = cx.add_window(|window, cx| Workspace::test_new(project.clone(), window, cx));
+    let cx = &mut VisualTestContext::from_window(*workspace, cx);
+    let panel = workspace.update(cx, ProjectPanel::new).unwrap();
+
+    toggle_expand_dir(&panel, "root/dir1", cx);
+
+    select_path_with_mark(&panel, "root/dir1/file1.txt", cx);
+    select_path_with_mark(&panel, "root/file3.txt", cx);
+    panel.update_in(cx, |panel, window, cx| {
+        panel.cut(&Cut, window, cx);
+    });
+
+    assert_eq!(
+        visible_entries_as_strings(&panel, 0..15, cx),
+        &[
+            "v root",
+            "    v dir1",
+            "          file1.txt  <== marked",
+            "          file2.txt",
+            "      file3.txt  <== selected  <== marked",
+        ],
+    );
+
+    select_path(&panel, "root/dir1", cx);
+    panel.update_in(cx, |panel, window, cx| {
+        panel.paste(&Paste, window, cx);
+    });
+    cx.executor().run_until_parked();
+
+    assert_eq!(
+        visible_entries_as_strings(&panel, 0..15, cx),
+        &[
+            "v root",
+            "    v dir1",
+            "          file1.txt",
+            "          file2.txt",
+            "          file3.txt  <== selected  <== marked",
+        ],
+        "Cut and paste to same location should not trigger a rename"
     );
 }
 
