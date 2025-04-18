@@ -22,6 +22,7 @@ use std::sync::Arc;
 use util::ResultExt as _;
 
 const MIN_FONT_SIZE: Pixels = px(6.0);
+const MAX_FONT_SIZE: Pixels = px(100.0);
 const MIN_LINE_HEIGHT: f32 = 1.0;
 
 #[derive(
@@ -748,7 +749,7 @@ pub fn reset_ui_font_size(cx: &mut App) {
 
 /// Ensures font size is within the valid range.
 pub fn clamp_font_size(size: Pixels) -> Pixels {
-    size.max(MIN_FONT_SIZE)
+    size.clamp(MIN_FONT_SIZE, MAX_FONT_SIZE)
 }
 
 fn clamp_font_weight(weight: f32) -> FontWeight {
@@ -883,13 +884,13 @@ impl settings::Settings for ThemeSettings {
             }
 
             merge(&mut this.ui_font_size, value.ui_font_size.map(Into::into));
-            this.ui_font_size = this.ui_font_size.clamp(px(6.), px(100.));
+            this.ui_font_size = clamp_font_size(this.ui_font_size);
 
             merge(
                 &mut this.buffer_font_size,
                 value.buffer_font_size.map(Into::into),
             );
-            this.buffer_font_size = this.buffer_font_size.clamp(px(6.), px(100.));
+            this.buffer_font_size = clamp_font_size(this.buffer_font_size);
 
             merge(&mut this.buffer_line_height, value.buffer_line_height);
 
