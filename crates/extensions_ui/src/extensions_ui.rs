@@ -13,7 +13,7 @@ use extension_host::{ExtensionManifest, ExtensionOperation, ExtensionStore};
 use fuzzy::{StringMatchCandidate, match_strings};
 use gpui::{
     Action, App, ClipboardItem, Context, Entity, EventEmitter, Flatten, Focusable,
-    InteractiveElement, KeyContext, ParentElement, Render, Styled, Task, TextStyle,
+    InteractiveElement, KeyContext, ParentElement, Render, ScrollStrategy, Styled, Task, TextStyle,
     UniformListScrollHandle, WeakEntity, Window, actions, point, uniform_list,
 };
 use num_format::{Locale, ToFormattedString};
@@ -394,27 +394,39 @@ impl ExtensionsPage {
     }
 
     fn filter_extension_entries(&mut self, cx: &mut Context<Self>) {
-        self.filtered_remote_extension_indices.clear();
-        self.filtered_remote_extension_indices.extend(
-            self.remote_extension_entries
-                .iter()
-                .enumerate()
-                .filter(|(_, extension)| match self.filter {
-                    ExtensionFilter::All => true,
-                    ExtensionFilter::Installed => {
-                        let status = Self::extension_status(&extension.id, cx);
-                        matches!(status, ExtensionStatus::Installed(_))
-                    }
-                    ExtensionFilter::NotInstalled => {
-                        let status = Self::extension_status(&extension.id, cx);
+        let mut new_entries = self
+            .remote_extension_entries
+            .iter()
+            .enumerate()
+            .filter(|(_, extension)| match self.filter {
+                ExtensionFilter::All => true,
+                ExtensionFilter::Installed => {
+                    let status = Self::extension_status(&extension.id, cx);
+                    matches!(status, ExtensionStatus::Installed(_))
+                }
+                ExtensionFilter::NotInstalled => {
+                    let status = Self::extension_status(&extension.id, cx);
 
-                        matches!(status, ExtensionStatus::NotInstalled)
-                    }
-                })
-                .map(|(ix, _)| ix),
-        );
-        self.list.set_offset(point(px(0.), px(0.)));
-        cx.notify();
+                    matches!(status, ExtensionStatus::NotInstalled)
+                }
+            })
+            .map(|(ix, _)| ix)
+            .peekable();
+        let first_entry_mismatch_index = self
+            .filtered_remote_extension_indices
+            .iter()
+            .find(|idx| new_entries.next().is_none_or(|new_idx| new_idx != **idx));
+        let results_changed = first_entry_mismatch_index.is_some() || new_entries.peek().is_some();
+
+        if let Some(mismatch_index) = first_entry_mismatch_index {
+            self.filtered_remote_extension_indices
+                .truncate(*mismatch_index);
+        }
+        self.filtered_remote_extension_indices.extend(new_entries);
+        if results_changed {
+            self.list.scroll_to_item(0, ScrollStrategy::Top);
+            cx.notify();
+        }
     }
 
     fn fetch_extensions(
